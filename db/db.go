@@ -6,6 +6,7 @@ import (
 )
 
 //ConnectToDB creates a connection to the database
+//and returns an instance of the database
 func ConnectToDB(conn string) (*sqlx.DB, error) {
 
 	db, err := sqlx.Connect("postgres", conn)

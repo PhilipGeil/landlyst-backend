@@ -39,11 +39,11 @@ func (h *apiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (r *APIRequest) Decode(p interface{}) error {
-	jsonEncoded := strings.Contains(r.r.Header.Get("Content-Type"), "application/json")
+	jsonEncoded := strings.Contains(r.R.Header.Get("Content-Type"), "application/json")
 	if !jsonEncoded {
 		return nil
 	}
-	err := json.NewDecoder(r.r.Body).Decode(p)
+	err := json.NewDecoder(r.R.Body).Decode(p)
 	if err != nil {
 		logrus.Warnf("Decode JSON error: %s", err)
 		return err
@@ -52,8 +52,8 @@ func (r *APIRequest) Decode(p interface{}) error {
 }
 
 func (r *APIRequest) Encode(p interface{}) bool {
-	r.r.Header.Set("Content-Type", "application/json; charset=utf-8")
-	err := json.NewEncoder(r.w).Encode(p)
+	r.R.Header.Set("Content-Type", "application/json; charset=utf-8")
+	err := json.NewEncoder(r.W).Encode(p)
 	if err != nil {
 		return false
 	}

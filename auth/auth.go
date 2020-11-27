@@ -4,26 +4,14 @@ import (
 	"context"
 	"encoding/base64"
 	"log"
-
-	"github.com/jackc/pgtype"
+	"strconv"
 
 	"github.com/PhilipGeil/landlyst-backend/api/resources"
 	"github.com/jmoiron/sqlx"
 )
 
-func CToGoString(c []byte) string {
-	n := -1
-	for i, b := range c {
-		if b == 0 {
-			break
-		}
-		n = i
-	}
-	return string(c[:n+1])
-}
-
 //CreateUser Creates a new user
-func CreateUser(ctx context.Context, user resources.User, db *sqlx.DB) {
+func CreateUser(ctx context.Context, user resources.User, db *sqlx.DB) string {
 	//Start with hashing password with salt
 	salt, err := CreateSalt()
 	if err != nil {
@@ -40,23 +28,11 @@ func CreateUser(ctx context.Context, user resources.User, db *sqlx.DB) {
 		log.Fatal("Begin DB transaction failed")
 	}
 
-	var permissionTypes pgtype.EnumArray
-	permissionTypes.Status = pgtype.Present
-	permissionTypes.Dimensions = []pgtype.ArrayDimension{
-		{
-			Length:     int32(len(user.Permissions)),
-			LowerBound: 1,
-		},
-	}
-	permissionTypes.Elements = make([]pgtype.GenericText, len(user.Permissions))
-	for idx, permissionType := range user.Permissions {
-		permissionTypes.Elements[idx] = pgtype.GenericText{
-			String: permissionType,
-		}
-		permissionTypes.Elements[idx].Status = pgtype.Present
+	if CheckIfUserExists(ctx, user, db) {
+		return "User already exists"
 	}
 
-	_, err = tx.ExecContext(
+	res, err := tx.ExecContext(
 		ctx,
 		`
 			INSERT INTO users 
@@ -83,14 +59,21 @@ func CreateUser(ctx context.Context, user resources.User, db *sqlx.DB) {
 				$7,
 				$8,
 				$9,
-				$10
+			'{guest}'
 			);
 		`,
-		user.FName, user.LName, user.Address, user.City, user.Zip_code, user.Phone, user.Email, base64.StdEncoding.EncodeToString(hash), base64.StdEncoding.EncodeToString(salt), permissionTypes,
+		user.FName, user.LName, user.Address, user.City, user.Zip_code, user.Phone, user.Email, base64.StdEncoding.EncodeToString(hash), base64.StdEncoding.EncodeToString(salt),
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	tx.Commit()
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return strconv.FormatInt(rowsAffected, 10) + " Rows was inserted"
 }

@@ -7,8 +7,8 @@ import (
 )
 
 type Request struct {
-	w        http.ResponseWriter
-	r        *http.Request
+	W        http.ResponseWriter
+	R        *http.Request
 	userAuth *cachedUserAuthentication
 
 	srv *Server
@@ -39,8 +39,8 @@ type cachedUserAuthentication struct {
 
 func request(w http.ResponseWriter, r *http.Request, srv *Server) *Request {
 	req := new(Request)
-	req.w = w
-	req.r = r
+	req.W = w
+	req.R = r
 	req.Vars = gmux.Vars(r)
 	req.Method = r.Method
 	req.srv = srv

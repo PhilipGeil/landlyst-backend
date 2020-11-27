@@ -13,19 +13,22 @@ func (api *API) CreateUser(ctx context.Context, r *server.APIRequest) error {
 	if err := r.Decode(&u); err != nil {
 		return err
 	}
-	auth.CreateUser(ctx, u, api.DB)
+	createUserResponse := auth.CreateUser(ctx, u, api.DB)
 
-	// type rows struct {
-	// 	RowsAffected int64
-	// }
+	type response struct {
+		Response string
+	}
 
-	// ro := rows{
-	// 	RowsAffected: rowsAffected,
-	// }
+	res := response{
+		Response: createUserResponse,
+	}
 
-	// if rowsAffected > 0 {
-	// 	r.Encode(ro)
-	// }
+	r.Encode(res)
 
+	return nil
+}
+
+func (api *API) Login(ctx context.Context, r *server.APIRequest) error {
+	auth.Middleware(r.Request)
 	return nil
 }

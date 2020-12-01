@@ -15,7 +15,9 @@ func Init(srv *server.Server, db *sqlx.DB) {
 	api.DB = db
 
 	srv.API("POST", "/api/createUser", api.CreateUser)
-	srv.API("GET", "/api/login", api.Login)
+	srv.API("POST", "/api/login", api.Login)
+	srv.API("POST", "/api/rooms", api.Rooms)
+	srv.API("GET", "/api/room-additions", api.RoomAdditions)
 }
 
 func rollbacktx(tx *sqlx.Tx) {

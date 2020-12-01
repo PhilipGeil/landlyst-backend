@@ -1,7 +1,8 @@
 package resources
 
 type User struct {
-	FName    string `json:"fName" db:"fName"`
+	ID       int    `json:"id" db:"id"`
+	FName    string `json:"fName" db:"fname"`
 	LName    string `json:"lName" db:"lName"`
 	Address  string `json:"address" db:"address"`
 	City     string `json:"city" db:"city"`
@@ -9,4 +10,9 @@ type User struct {
 	Phone    string `json:"phone" db:"phone"`
 	Email    string `json:"email" db:"email"`
 	Password string `json:"password" db:"password"`
+}
+
+type Credentials struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }

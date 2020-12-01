@@ -4,22 +4,27 @@ import (
 	"context"
 	"database/sql"
 	"encoding/base64"
+	"fmt"
 	"log"
 
 	"github.com/PhilipGeil/landlyst-backend/api/resources"
 	"github.com/jmoiron/sqlx"
 )
 
-func ValidateEmailAndPassword(db *sqlx.DB, ctx context.Context, password, email string) bool {
-	salt, err := getSalt(email, db, ctx)
+func ValidateEmailAndPassword(ctx context.Context, db *sqlx.DB, password, email string) (*resources.User, error) {
+	salt, err := getSalt(ctx, email, db)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	hash, err := CreateHashWithSalt(password, []byte(salt))
+	saltBytes, err := base64.StdEncoding.DecodeString(salt)
+
+	hash, err := CreateHashWithSalt(password, saltBytes)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	fmt.Println(base64.StdEncoding.EncodeToString(hash))
 
 	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {
@@ -31,21 +36,20 @@ func ValidateEmailAndPassword(db *sqlx.DB, ctx context.Context, password, email 
 	err = tx.QueryRowxContext(
 		ctx,
 		`
-			SELECT fName, lName, address, city, zip_code, phone, email, password FROM users
+			SELECT id, "fName", "lName", address, city, zip_code, phone, email FROM users
 			WHERE email = $1 AND password = $2;
 		`,
 		email,
 		base64.StdEncoding.EncodeToString(hash),
-	).Scan(&user)
-
+	).Scan(&user.ID, &user.FName, &user.LName, &user.Address, &user.City, &user.Zip_code, &user.Phone, &user.Email)
 	if err == sql.ErrNoRows {
-		return false
+		return nil, err
 	}
 
-	return true
+	return &user, nil
 }
 
-func getSalt(email string, db *sqlx.DB, ctx context.Context) (string, error) {
+func getSalt(ctx context.Context, email string, db *sqlx.DB) (string, error) {
 	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {
 		log.Fatal(err)

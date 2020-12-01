@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 
+	"github.com/PhilipGeil/landlyst-backend/auth"
 	gmux "github.com/gorilla/mux"
 )
 
@@ -20,6 +21,29 @@ type Request struct {
 type cachedUserAuthentication struct {
 	userID        string
 	authenticated bool
+}
+
+//UserAuthentication authenticates the user
+func (r *Request) UserAuthentication() (authenticated bool, err error) {
+	c, err := r.R.Cookie("token")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			// If the cookie is not set, return an unauthorized status
+			r.W.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		// For any other type of error, return a bad request status
+		r.W.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	tknStr := c.Value
+
+	ok := auth.ValidateToken(tknStr)
+	if ok {
+		auth.RenewToken(r.W)
+	}
+	return ok, nil
 }
 
 // func (r *Request) UserAuthentication() (userID string, authenticated bool, err error) {

@@ -14,4 +14,5 @@ require (
 	github.com/sirupsen/logrus v1.6.0
 	gocloud.dev v0.20.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	google.golang.org/genproto v0.0.0-20201119123407-9b1e624d6bc4
 )

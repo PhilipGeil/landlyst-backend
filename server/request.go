@@ -38,6 +38,9 @@ func (r *Request) UserAuthentication() (authenticated bool, err error) {
 	}
 
 	tknStr := c.Value
+	if tknStr == "" {
+		return false, nil
+	}
 
 	ok := auth.ValidateToken(tknStr)
 	if ok {

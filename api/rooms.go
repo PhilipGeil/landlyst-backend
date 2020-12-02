@@ -2,36 +2,52 @@ package api
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 
+	"github.com/PhilipGeil/landlyst-backend/api/resources"
 	"github.com/PhilipGeil/landlyst-backend/room"
 	"github.com/PhilipGeil/landlyst-backend/server"
 )
 
 func (api *API) Rooms(ctx context.Context, r *server.APIRequest) error {
-	type temp struct {
-		Response string
+	ok, err := r.UserAuthentication()
+	if err != nil {
+		fmt.Println("The error is here")
+		return err
+	}
+	if !ok {
+		http.Error(r.W, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return fmt.Errorf("Unauthorized")
 	}
 
-	ok, err := r.UserAuthentication()
+	type roomAdditions struct {
+		additions []resources.RoomAdditions
+	}
+
+	var ra []resources.RoomAdditions
+
+	r.Decode(&ra)
+
+	rooms, err := room.Room(ctx, api.DB, ra)
 	if err != nil {
 		return err
 	}
 
-	if ok {
-		r.Encode(temp{
-			Response: "Shit works",
-		})
-	} else {
-		r.Encode(temp{
-			Response: "Shit don't work",
-		})
-	}
+	r.Encode(rooms)
 	return nil
 }
 
 func (api *API) RoomAdditions(ctx context.Context, r *server.APIRequest) error {
-	r.UserAuthentication()
-	ra, err := room.Room(ctx, api.DB)
+	ok, err := r.UserAuthentication()
+	if err != nil {
+		return err
+	}
+	if !ok {
+		http.Error(r.W, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return fmt.Errorf("Unauthorized")
+	}
+	ra, err := room.RoomAdditions(ctx, api.DB)
 	if err != nil {
 		return err
 	}

@@ -82,3 +82,21 @@ func GetIP(r *http.Request) string {
 	}
 	return r.RemoteAddr
 }
+
+func (api *API) SignOut(ctx context.Context, r *server.APIRequest) error {
+	type signOutResponse struct {
+		Response string
+	}
+
+	http.SetCookie(r.W, &http.Cookie{
+		Name:    "token",
+		Value:   "",
+		Expires: time.Unix(0, 0),
+	})
+
+	r.Encode(signOutResponse{
+		Response: "Success",
+	})
+
+	return nil
+}

@@ -1,0 +1,5 @@
+package reservations
+
+func SetReservation() {
+
+}

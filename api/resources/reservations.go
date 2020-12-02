@@ -13,3 +13,8 @@ type ReservationSearch struct {
 	Items []RoomAdditions
 	Dates ReservationDates
 }
+
+type Reservation struct {
+	Rooms []Room
+	Dates ReservationDates
+}

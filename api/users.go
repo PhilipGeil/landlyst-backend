@@ -53,7 +53,7 @@ func (api *API) Login(ctx context.Context, r *server.APIRequest) error {
 		r.Encode(loginResponse{Response: "Error logging in", ID: 100, User: nil})
 		return err
 	}
-	expiration := time.Now().Add(time.Minute * 2)
+	expiration := time.Now().Add(time.Hour * 2)
 	token := auth.CreateToken(user.Email, expiration)
 
 	ip := GetIP(r.R)

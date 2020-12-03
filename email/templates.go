@@ -50,6 +50,6 @@ const addressConfirmationTemplate = `
     <br>
     Med venlig hilsen<br />
     <br>
-    <img class="logo" src="../public/images/Logo@2x.png"></img>
+    <img class="logo" src="https://raw.githubusercontent.com/PhilipGeil/landlyst-backend/master/public/images/Logo%402x.png"></img>
 </body>
 `

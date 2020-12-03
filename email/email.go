@@ -48,7 +48,7 @@ func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
 func SendEmail() {
 	from := mail.Address{Name: "Landlyst", Address: "phil2643@zbc.dk"}
 	to := mail.Address{Name: "Philip", Address: "pgj@individualisterne.dk"}
-	subject := "My test subject"
+	subject := "Bekræft oprettelse"
 	host := "smtp.office365.com"
 
 	// headers := make(map[string]string)
@@ -90,7 +90,7 @@ func SendEmail() {
 		Name    string
 		Message string
 	}{
-		Name:    "Hasan Yousef",
+		Name:    "Philip Jensen",
 		Message: "This is a test message in a HTML template",
 	})
 

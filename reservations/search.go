@@ -10,7 +10,7 @@ import (
 	"github.com/lib/pq"
 )
 
-func SearchByDate(ctx context.Context, db *sqlx.DB, rs *resources.ReservationSearch) ([]resources.Room, error) {
+func SearchByDate(ctx context.Context, db *sqlx.DB, rs *resources.ReservationSearch) ([]resources.ReservationSearchResult, error) {
 	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -28,17 +28,25 @@ func SearchByDate(ctx context.Context, db *sqlx.DB, rs *resources.ReservationSea
 		rows, err = tx.QueryxContext(
 			ctx,
 			`
-				SELECT room_number, id, cleaned, current_staying FROM rooms
-				WHERE id NOT IN (
-					SELECT room_id FROM reservations_rooms
-					JOIN reservations
-					ON reservations.id = reservations_rooms.reservation_id 
-					WHERE reservations.start_date BETWEEN $1 AND $2
-					OR reservations.end_date BETWEEN $1 AND $2
+			SELECT count(r.room_id) as amount, array_agg(r.room_id) as rooms, b.add_id, b.items, b.price::integer FROM (SELECT room_id FROM rooms_room_additions
+				GROUP by room_id) r
+				LEFT JOIN
+				(SELECT ra.room_id, array_agg(ab.id) as add_id, array_agg(ab.item) as items, sum(ab.price) as price FROM rooms_room_additions ra
+					LEFT JOIN room_additions ab
+					ON ab.id = ra.room_additions_id
+					GROUP BY ra.room_id) as b
+				ON b.room_id = r.room_id
+				WHERE r.room_id NOT IN (
+				SELECT room_id FROM reservations_rooms
+				JOIN reservations
+				ON reservations.id = reservations_rooms.reservation_id 
+				WHERE tsrange($1, $2) @> reservations.start_date::timestamp
+				OR tsrange($1, $2) @> reservations.end_date::timestamp
 				)	
+				GROUP BY (b.add_id, b.items, b.price)
 			`,
-			&rs.Dates.StartDate,
-			&rs.Dates.EndDate,
+			rs.Dates.StartDate,
+			rs.Dates.EndDate,
 		)
 		if err == sql.ErrNoRows {
 			fmt.Println("Sorry mate, didn't find anything")
@@ -50,23 +58,31 @@ func SearchByDate(ctx context.Context, db *sqlx.DB, rs *resources.ReservationSea
 		rows, err = tx.QueryxContext(
 			ctx,
 			`
-			SELECT room_number, id, cleaned, current_staying FROM rooms
-			WHERE id NOT IN (
+			SELECT count(r.room_id) as amount, array_agg(r.room_id) as "rooms", b.add_id, b.items, b.price::integer FROM (SELECT room_id FROM rooms_room_additions
+				GROUP by room_id) r
+				LEFT JOIN
+				(SELECT ra.room_id, array_agg(ab.id) as "add_id", array_agg(ab.item) as "items", sum(ab.price) as "price" FROM rooms_room_additions ra
+					LEFT JOIN room_additions ab
+					ON ab.id = ra.room_additions_id
+					GROUP BY ra.room_id) as b
+				ON b.room_id = r.room_id
+				WHERE r.room_id NOT IN (
 				SELECT room_id FROM reservations_rooms
 				JOIN reservations
 				ON reservations.id = reservations_rooms.reservation_id 
-				WHERE reservations.start_date BETWEEN $1 AND $2
-				OR reservations.end_date BETWEEN $1 AND $2
-			)
-			AND
-			id IN (
-				SELECT room_id FROM rooms_room_additions
-				JOIN room_additions
-				ON room_additions.id = rooms_room_additions.room_additions_id
-				WHERE room_additions.id = ANY($3)
-				GROUP BY room_id
-				HAVING count(room_id) = $4
+				WHERE tsrange($1, $2) @> reservations.start_date::timestamp
+				OR tsrange($1, $2) @> reservations.end_date::timestamp
 				)	
+				AND
+				r.room_id IN (
+					SELECT room_id FROM rooms_room_additions
+					JOIN room_additions
+					ON room_additions.id = rooms_room_additions.room_additions_id
+					WHERE room_additions.id = ANY($3)
+					GROUP BY room_id
+					HAVING count(room_id) = $4
+					)
+				GROUP BY (b.add_id, b.items, b.price)
 				`,
 			&rs.Dates.StartDate,
 			&rs.Dates.EndDate,
@@ -81,17 +97,17 @@ func SearchByDate(ctx context.Context, db *sqlx.DB, rs *resources.ReservationSea
 		}
 	}
 
-	var rooms []resources.Room
+	var result []resources.ReservationSearchResult
 
-	var r resources.Room
+	var r resources.ReservationSearchResult
 
 	for rows.Next() {
-		rows.Scan(&r.RoomNumber, &r.ID, &r.Cleaned, &r.CurrentStaying)
-		rooms = append(rooms, r)
+		rows.Scan(&r.Amount, &r.Rooms, &r.AddID, &r.Items, &r.Price)
+		result = append(result, r)
 		fmt.Println(r)
 	}
 
-	fmt.Println(rooms)
+	fmt.Println(result)
 
-	return rooms, nil
+	return result, nil
 }

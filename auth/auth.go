@@ -40,7 +40,6 @@ func CreateUser(ctx context.Context, user resources.User, db *sqlx.DB) string {
 				"fName",
 				"lName",
 				"address",
-				"city",
 				"zip_code",
 				"phone",
 				"email",
@@ -58,11 +57,10 @@ func CreateUser(ctx context.Context, user resources.User, db *sqlx.DB) string {
 				$6,
 				$7,
 				$8,
-				$9,
 			'{guest}'
 			);
 		`,
-		user.FName, user.LName, user.Address, user.City, user.Zip_code, user.Phone, user.Email, base64.StdEncoding.EncodeToString(hash), base64.StdEncoding.EncodeToString(salt),
+		user.FName, user.LName, user.Address, user.Zip_code, user.Phone, user.Email, base64.StdEncoding.EncodeToString(hash), base64.StdEncoding.EncodeToString(salt),
 	)
 	if err != nil {
 		log.Fatal(err)

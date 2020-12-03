@@ -36,12 +36,12 @@ func ValidateEmailAndPassword(ctx context.Context, db *sqlx.DB, password, email 
 	err = tx.QueryRowxContext(
 		ctx,
 		`
-			SELECT id, "fName", "lName", address, city, zip_code, phone, email FROM users
+			SELECT id, "fName", "lName", address, zip_code, phone, email FROM users
 			WHERE email = $1 AND password = $2;
 		`,
 		email,
 		base64.StdEncoding.EncodeToString(hash),
-	).Scan(&user.ID, &user.FName, &user.LName, &user.Address, &user.City, &user.Zip_code, &user.Phone, &user.Email)
+	).Scan(&user.ID, &user.FName, &user.LName, &user.Address, &user.Zip_code, &user.Phone, &user.Email)
 	if err == sql.ErrNoRows {
 		return nil, err
 	}

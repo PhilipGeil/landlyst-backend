@@ -5,7 +5,8 @@ type Customer struct {
 	FName    string `json:"fName" db:"fname"`
 	LName    string `json:"lName" db:"lName"`
 	Address  string `json:"address" db:"address"`
-	Zip_code int    `json:"zip_code" db:"zip_code"`
+	Zip_code string `json:"zip_code" db:"zip_code"`
 	Phone    string `json:"phone" db:"phone"`
 	Email    string `json:"email" db:"email"`
+	UserID   int    `json:"user_id"`
 }

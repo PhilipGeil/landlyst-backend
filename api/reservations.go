@@ -11,7 +11,7 @@ import (
 )
 
 func (api *API) SearchForReservation(ctx context.Context, r *server.APIRequest) error {
-	ok, err := r.UserAuthentication()
+	ok, err := r.UserAuthentication(ctx, api.DB)
 	if err != nil {
 		fmt.Println("The error is here")
 		return err
@@ -34,8 +34,37 @@ func (api *API) SearchForReservation(ctx context.Context, r *server.APIRequest) 
 	return nil
 }
 
-func (api *API) SetReservation(ctx context.Context, r *server.APIReguest) error {
+//SetReservation creates a new reservation
+func (api *API) SetReservation(ctx context.Context, r *server.APIRequest) error {
+	ok, err := r.UserAuthentication(ctx, api.DB)
+	if err != nil {
+		fmt.Println("The error is here")
+		return err
+	}
+	if !ok {
+		http.Error(r.W, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return fmt.Errorf("Unauthorized")
+	}
 
+	var res resources.Reservation
+
+	r.Decode(&res)
+
+	resOK, err := reservations.SetReservation(ctx, api.DB, res)
+	if err != nil {
+		return err
+	}
+
+	type response struct {
+		Response string
+	}
+
+	if resOK {
+		r.Encode(response{
+			Response: "Success",
+		})
+	}
+	return nil
 }
 
 /*

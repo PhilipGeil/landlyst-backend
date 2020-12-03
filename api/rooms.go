@@ -11,7 +11,7 @@ import (
 )
 
 func (api *API) Rooms(ctx context.Context, r *server.APIRequest) error {
-	ok, err := r.UserAuthentication()
+	ok, err := r.UserAuthentication(ctx, api.DB)
 	if err != nil {
 		fmt.Println("The error is here")
 		return err
@@ -39,7 +39,7 @@ func (api *API) Rooms(ctx context.Context, r *server.APIRequest) error {
 }
 
 func (api *API) RoomAdditions(ctx context.Context, r *server.APIRequest) error {
-	ok, err := r.UserAuthentication()
+	ok, err := r.UserAuthentication(ctx, api.DB)
 	if err != nil {
 		return err
 	}

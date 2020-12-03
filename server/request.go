@@ -1,10 +1,12 @@
 package server
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/PhilipGeil/landlyst-backend/auth"
 	gmux "github.com/gorilla/mux"
+	"github.com/jmoiron/sqlx"
 )
 
 type Request struct {
@@ -24,7 +26,7 @@ type cachedUserAuthentication struct {
 }
 
 //UserAuthentication authenticates the user
-func (r *Request) UserAuthentication() (authenticated bool, err error) {
+func (r *Request) UserAuthentication(ctx context.Context, db *sqlx.DB) (authenticated bool, err error) {
 	c, err := r.R.Cookie("token")
 	if err != nil {
 		if err == http.ErrNoCookie {
@@ -39,12 +41,17 @@ func (r *Request) UserAuthentication() (authenticated bool, err error) {
 
 	tknStr := c.Value
 	if tknStr == "" {
-		return false, nil
+		return
 	}
 
 	ok := auth.ValidateToken(tknStr)
+	var sessionID int
 	if ok {
-		auth.RenewToken(r.W)
+		sessionID, err = auth.RenewToken(r.W, tknStr)
+		if err != nil {
+			return
+		}
+		auth.ExtendSession(ctx, db, sessionID)
 	}
 	return ok, nil
 }

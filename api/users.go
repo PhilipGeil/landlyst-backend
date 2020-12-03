@@ -53,12 +53,15 @@ func (api *API) Login(ctx context.Context, r *server.APIRequest) error {
 		r.Encode(loginResponse{Response: "Error logging in", ID: 100, User: nil})
 		return err
 	}
-	expiration := time.Now().Add(time.Hour * 2)
-	token := auth.CreateToken(user.Email, expiration)
-
 	ip := GetIP(r.R)
 
-	err = auth.CreateSession(ctx, api.DB, user.ID, token, ip)
+	sessionID, err := auth.CreateSession(ctx, api.DB, user.ID, ip)
+	if err != nil {
+		return err
+	}
+
+	expiration := time.Now().Add(time.Hour * 2)
+	token := auth.CreateToken(user.Email, expiration, sessionID)
 
 	http.SetCookie(r.W, &http.Cookie{
 		Name:    "token",

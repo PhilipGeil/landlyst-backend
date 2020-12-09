@@ -29,3 +29,15 @@ type ReservationSearchResult struct {
 	Items  pq.StringArray `db:"items"`
 	Price  int            `db:"price"`
 }
+
+type Discount struct {
+	Id          int     `json:"id"`
+	Type        string  `json:"type"`
+	Number      float64 `json:"number"`
+	Description string  `json:"description"`
+}
+
+type ReservationResponse struct {
+	Reservation Reservation
+	Discount    Discount
+}

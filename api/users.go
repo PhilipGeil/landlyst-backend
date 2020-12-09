@@ -8,25 +8,34 @@ import (
 
 	"github.com/PhilipGeil/landlyst-backend/api/resources"
 	"github.com/PhilipGeil/landlyst-backend/auth"
+	"github.com/PhilipGeil/landlyst-backend/email"
 	"github.com/PhilipGeil/landlyst-backend/server"
 )
 
-func (api *API) CreateUser(ctx context.Context, r *server.APIRequest) error {
+func (api *API) CreateUser(ctx context.Context, r *server.APIRequest) (err error) {
 	var u resources.User
 	if err := r.Decode(&u); err != nil {
 		return err
 	}
-	createUserResponse := auth.CreateUser(ctx, u, api.DB)
+	userID, err := auth.CreateUser(ctx, u, api.DB)
+	if err != nil {
+		return
+	}
+
+	uuid, err := auth.VerifyEmail(ctx, api.DB, userID)
+	if err != nil {
+		return
+	}
+
+	email.SendVerifyEmail(uuid, u.Email, u.FName)
 
 	type response struct {
 		Response string
 	}
 
-	res := response{
-		Response: createUserResponse,
-	}
-
-	r.Encode(res)
+	r.Encode(response{
+		Response: "Ok",
+	})
 
 	return nil
 }

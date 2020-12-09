@@ -10,7 +10,7 @@ import (
 	"github.com/lib/pq"
 )
 
-func SearchByDate(ctx context.Context, db *sqlx.DB, rs *resources.ReservationSearch) ([]resources.ReservationSearchResult, error) {
+func SearchByDate(ctx context.Context, db *sqlx.DB, rs resources.ReservationSearch) ([]resources.ReservationSearchResult, error) {
 	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -21,6 +21,8 @@ func SearchByDate(ctx context.Context, db *sqlx.DB, rs *resources.ReservationSea
 	for _, i := range rs.Items {
 		additions = append(additions, i.ID)
 	}
+
+	fmt.Println(rs)
 
 	var rows *sqlx.Rows
 
@@ -42,8 +44,10 @@ func SearchByDate(ctx context.Context, db *sqlx.DB, rs *resources.ReservationSea
 				ON reservations.id = reservations_rooms.reservation_id 
 				WHERE tsrange($1, $2) @> reservations.start_date::timestamp
 				OR tsrange($1, $2) @> reservations.end_date::timestamp
+				AND confirmed = true
 				)	
 				GROUP BY (b.add_id, b.items, b.price)
+				ORDER BY (b.price)
 			`,
 			rs.Dates.StartDate,
 			rs.Dates.EndDate,
@@ -72,6 +76,7 @@ func SearchByDate(ctx context.Context, db *sqlx.DB, rs *resources.ReservationSea
 				ON reservations.id = reservations_rooms.reservation_id 
 				WHERE tsrange($1, $2) @> reservations.start_date::timestamp
 				OR tsrange($1, $2) @> reservations.end_date::timestamp
+				AND confirmed = true
 				)	
 				AND
 				r.room_id IN (
@@ -83,6 +88,7 @@ func SearchByDate(ctx context.Context, db *sqlx.DB, rs *resources.ReservationSea
 					HAVING count(room_id) = $4
 					)
 				GROUP BY (b.add_id, b.items, b.price)
+				ORDER BY (b.price)
 				`,
 			&rs.Dates.StartDate,
 			&rs.Dates.EndDate,
@@ -104,10 +110,7 @@ func SearchByDate(ctx context.Context, db *sqlx.DB, rs *resources.ReservationSea
 	for rows.Next() {
 		rows.Scan(&r.Amount, &r.Rooms, &r.AddID, &r.Items, &r.Price)
 		result = append(result, r)
-		fmt.Println(r)
 	}
-
-	fmt.Println(result)
 
 	return result, nil
 }

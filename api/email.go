@@ -20,7 +20,7 @@ func (api *API) SendEmail(ctx context.Context, r *server.APIRequest) error {
 		return fmt.Errorf("Unauthorized")
 	}
 
-	email.SendEmail()
+	email.SendVerifyEmail("123123", "pgj.philip@gmail.com", "Philip")
 
 	return nil
 }

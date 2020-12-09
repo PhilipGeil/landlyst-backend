@@ -10,10 +10,10 @@ const addressConfirmationTemplate = `
     }
 
     h1 {
-        color: red;
+        color: #FD5D5D;
     }
 
-    button {
+    .button {
         background-color: #FD5D5D;
         border: none;
         padding: 10px 20px;
@@ -23,16 +23,20 @@ const addressConfirmationTemplate = `
         margin: auto;
     }
 
+    .button:hover {
+        cursor: pointer;
+        opacity: .7;
+    }
+
     .button-div {
         width: 100%;
         text-align: center;
     }
 
     .logo {
-        width: 80%;
+        width: 60%;
     }
 </style>
-
 <body>
     <h1>Hej {{.Name}}</h1>
     <p>
@@ -43,13 +47,22 @@ const addressConfirmationTemplate = `
     </p>
     <p>For at bekræfte din profil på landlysthotel.dk, skal du blot <strong>klikke på linket nedenunder</strong>.</p>
     <br>
-    <div class="button-div">
-        <button>Bekræft email</button>
-        
+	<div class="button-div">
+	<p>
+	<a class="button" style="background-color: #FD5D5D;
+	border: none;
+	padding: 10px 20px;
+	color: white;
+	font-weight: 600;
+	border-radius: 10px;
+	text-decoration: none;
+	margin: auto;" target="_blank" href="www.google.dk">Bekræft email</a>
+    </p>
     </div>
+    <p><i>Dette link vil udløbe efter 30 dage</i></p>
     <br>
     Med venlig hilsen<br />
     <br>
-    <img class="logo" src="https://raw.githubusercontent.com/PhilipGeil/landlyst-backend/master/public/images/Logo%402x.png"></img>
+    <img class="logo" style="width: 60%" src="https://raw.githubusercontent.com/PhilipGeil/landlyst-backend/master/public/images/Logo%402x.png"></img>
 </body>
 `

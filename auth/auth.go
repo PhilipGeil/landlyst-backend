@@ -4,14 +4,13 @@ import (
 	"context"
 	"encoding/base64"
 	"log"
-	"strconv"
 
 	"github.com/PhilipGeil/landlyst-backend/api/resources"
 	"github.com/jmoiron/sqlx"
 )
 
 //CreateUser Creates a new user
-func CreateUser(ctx context.Context, user resources.User, db *sqlx.DB) string {
+func CreateUser(ctx context.Context, user resources.User, db *sqlx.DB) (userID int, err error) {
 	//Start with hashing password with salt
 	salt, err := CreateSalt()
 	if err != nil {
@@ -28,11 +27,12 @@ func CreateUser(ctx context.Context, user resources.User, db *sqlx.DB) string {
 		log.Fatal("Begin DB transaction failed")
 	}
 
-	if CheckIfUserExists(ctx, user, db) {
-		return "User already exists"
+	_, err = CheckIfUserExists(ctx, user, db)
+	if err != nil {
+		return
 	}
 
-	res, err := tx.ExecContext(
+	err = tx.QueryRowxContext(
 		ctx,
 		`
 			INSERT INTO users 
@@ -58,20 +58,14 @@ func CreateUser(ctx context.Context, user resources.User, db *sqlx.DB) string {
 				$7,
 				$8,
 			'{guest}'
-			);
+			) RETURNING id;
 		`,
 		user.FName, user.LName, user.Address, user.Zip_code, user.Phone, user.Email, base64.StdEncoding.EncodeToString(hash), base64.StdEncoding.EncodeToString(salt),
-	)
+	).Scan(&userID)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	tx.Commit()
-
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return strconv.FormatInt(rowsAffected, 10) + " Rows was inserted"
+	return
 }

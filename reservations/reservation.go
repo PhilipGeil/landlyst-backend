@@ -2,15 +2,17 @@ package reservations
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/PhilipGeil/landlyst-backend/api/resources"
+	_ "github.com/jackc/pgtype"
 	"github.com/jmoiron/sqlx"
 )
 
-func SetReservation(ctx context.Context, db *sqlx.DB, r resources.Reservation) (bool, error) {
+func SetReservation(ctx context.Context, db *sqlx.DB, r resources.Reservation) (res resources.ReservationResponse, err error) {
 	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {
-		return false, err
+		return
 	}
 
 	var id int
@@ -35,12 +37,12 @@ func SetReservation(ctx context.Context, db *sqlx.DB, r resources.Reservation) (
 		)
 	}
 	if err != nil {
-		return false, err
+		return
 	}
 
 	customerID, err := CreateCustomer(ctx, db, r.Customer)
 	if err != nil {
-		return false, err
+		return
 	}
 
 	_, err = tx.ExecContext(
@@ -57,7 +59,39 @@ func SetReservation(ctx context.Context, db *sqlx.DB, r resources.Reservation) (
 		id,
 	)
 
+	var discount resources.Discount
+
+	var discountType []uint8
+
+	err = tx.QueryRowxContext(
+		ctx,
+		`
+			SELECT id, type, number::integer, description FROM reservations_discounts
+			JOIN discounts ON discounts.id = reservations_discounts.discount_id
+			WHERE reservations_discounts.reservation_id = $1 
+		`,
+		id,
+	).Scan(&discount.Id, &discountType, &discount.Number, &discount.Description)
+	if err == sql.ErrNoRows {
+		return res, nil
+	} else if err != nil {
+		return
+	}
+
+	discount.Type = B2S(discountType)
+
 	tx.Commit()
 
-	return true, nil
+	res.Discount = discount
+	res.Reservation = r
+
+	return
+}
+
+func B2S(bs []uint8) string {
+	b := make([]byte, len(bs))
+	for i, v := range bs {
+		b[i] = byte(v)
+	}
+	return string(b)
 }

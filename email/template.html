@@ -13,7 +13,7 @@
         color: #FD5D5D;
     }
 
-    button {
+    .button {
         background-color: #FD5D5D;
         border: none;
         padding: 10px 20px;
@@ -23,13 +23,18 @@
         margin: auto;
     }
 
+    .button:hover {
+        cursor: pointer;
+        opacity: .7;
+    }
+
     .button-div {
         width: 100%;
         text-align: center;
     }
 
     .logo {
-        width: 80%;
+        width: 60%;
     }
 </style>
 
@@ -44,13 +49,24 @@
     <p>For at bekræfte din profil på landlysthotel.dk, skal du blot <strong>klikke på linket nedenunder</strong>.</p>
     <br>
     <div class="button-div">
-        <button>Bekræft email</button>
-        
+        <a class="button" style="background-color: #FD5D5D;
+        border: none;
+        width: 200px;
+        height: 50px;
+        padding: 10px 15px;
+        text-decoration: none;
+        color: white;
+        font-weight: 600;
+        border-radius: 10px;
+        margin: auto;" target="_blank" href="{{.Link}}">Bekræft email</a>
+
     </div>
+    <p><i>Dette link vil udløbe efter 30 dage</i></p>
     <br>
     Med venlig hilsen<br />
     <br>
-    <img class="logo" src="https://raw.githubusercontent.com/PhilipGeil/landlyst-backend/master/public/images/Logo%402x.png"></img>
+    <img class="logo" style="width: 440px;"
+        src="https://raw.githubusercontent.com/PhilipGeil/landlyst-backend/master/public/images/Logo.png"></img>
 </body>
 
 </html>

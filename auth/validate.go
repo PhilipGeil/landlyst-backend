@@ -71,7 +71,7 @@ func getSalt(ctx context.Context, email string, db *sqlx.DB) (string, error) {
 	return salt, nil
 }
 
-func CheckIfUserExists(ctx context.Context, user resources.User, db *sqlx.DB) bool {
+func CheckIfUserExists(ctx context.Context, user resources.User, db *sqlx.DB) (ok bool, err error) {
 	tx, err := db.BeginTxx(ctx, nil)
 
 	var id string
@@ -84,11 +84,11 @@ func CheckIfUserExists(ctx context.Context, user resources.User, db *sqlx.DB) bo
 		user.Email,
 	).Scan(&id)
 	if err == sql.ErrNoRows {
-		return false
+		return false, nil
 	}
 
 	tx.Commit()
 
-	return true
+	return true, fmt.Errorf("User already exists in the system")
 
 }

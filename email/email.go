@@ -8,10 +8,12 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"log"
 	"mime"
 	"net"
 	"net/mail"
 	"net/smtp"
+	"os"
 	"strings"
 )
 
@@ -45,11 +47,31 @@ func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
 	return nil, nil
 }
 
-func SendEmail() {
-	from := mail.Address{Name: "Landlyst", Address: "phil2643@zbc.dk"}
-	to := mail.Address{Name: "Philip", Address: "pgj@individualisterne.dk"}
+func SendVerifyEmail(uuid, email, fname string) {
 	subject := "Bekræft oprettelse"
+	var body bytes.Buffer
+
+	tmpl := template.Must(template.ParseFiles("C:\\Users\\phil2643\\development\\landlyst\\api-server\\email\\template.html"))
+
+	if err := tmpl.Execute(&body, struct {
+		Name string
+		Link string
+	}{
+		Name: "Philip Jensen",
+		Link: "http://localhost:8080/api/verify/" + uuid,
+	}); err != nil {
+		log.Fatalln(err)
+	}
+
+	SendEmail(base64.StdEncoding.EncodeToString(body.Bytes()), fname, email, subject)
+}
+
+func SendEmail(s, fname, email, subject string) {
+	from := mail.Address{Name: "Landlyst Kro og Hotel", Address: "phil2643@zbc.dk"}
+	to := mail.Address{Name: fname, Address: email}
 	host := "smtp.office365.com"
+	authEmail := os.Getenv("EMAIL_AUTH_EMAIL")
+	authPass := os.Getenv("EMAIL_AUTH_PASS")
 
 	// headers := make(map[string]string)
 	// headers["From"] = from.String()
@@ -74,27 +96,7 @@ func SendEmail() {
 	msg.WriteString("Content-Transfer-Encoding: base64\r\n")
 	msg.WriteString("\r\n")
 
-	addressConfirmation, err := template.New("addressConfirmation").Parse(addressConfirmationTemplate)
-	if err != nil {
-		panic(err)
-	}
-
-	var body bytes.Buffer
-
-	// t, err := template.New("template.html").ParseFiles("template.html")
-	// if err != nil {
-	// 	fmt.Println("Read file err")
-	// }
-
-	addressConfirmation.Execute(&body, struct {
-		Name    string
-		Message string
-	}{
-		Name:    "Philip Jensen",
-		Message: "This is a test message in a HTML template",
-	})
-
-	msg.WriteString(base64.StdEncoding.EncodeToString(body.Bytes()))
+	msg.WriteString(s)
 
 	tlsconfig := &tls.Config{
 		ServerName: host,
@@ -115,7 +117,7 @@ func SendEmail() {
 		return
 	}
 
-	if err = c.Auth(LoginAuth("phil2643@zbc.dk", "Alba2018")); err != nil {
+	if err = c.Auth(LoginAuth(authEmail, authPass)); err != nil {
 		fmt.Println("c.Auth Error: ", err)
 		return
 	}

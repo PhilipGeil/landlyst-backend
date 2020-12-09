@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/PhilipGeil/landlyst-backend/api/resources"
 	"github.com/PhilipGeil/landlyst-backend/reservations"
@@ -11,19 +10,24 @@ import (
 )
 
 func (api *API) SearchForReservation(ctx context.Context, r *server.APIRequest) error {
-	ok, err := r.UserAuthentication(ctx, api.DB)
+	// ok, err := r.UserAuthentication(ctx, api.DB)
+	// if err != nil {
+	// 	fmt.Println("The error is here")
+	// 	return err
+	// }
+	// if !ok {
+	// 	http.Error(r.W, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+	// 	return fmt.Errorf("Unauthorized")
+	// }
+
+	fmt.Println(r.Method)
+
+	var rs resources.ReservationSearch
+
+	err := r.Decode(&rs)
 	if err != nil {
-		fmt.Println("The error is here")
 		return err
 	}
-	if !ok {
-		http.Error(r.W, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		return fmt.Errorf("Unauthorized")
-	}
-
-	var rs *resources.ReservationSearch
-
-	r.Decode(&rs)
 
 	search, err := reservations.SearchByDate(ctx, api.DB, rs)
 	if err != nil {
@@ -36,34 +40,26 @@ func (api *API) SearchForReservation(ctx context.Context, r *server.APIRequest) 
 
 //SetReservation creates a new reservation
 func (api *API) SetReservation(ctx context.Context, r *server.APIRequest) error {
-	ok, err := r.UserAuthentication(ctx, api.DB)
+	// ok, err := r.UserAuthentication(ctx, api.DB)
+	// if err != nil {
+	// 	fmt.Println("The error is here")
+	// 	return err
+	// }
+	// if !ok {
+	// 	http.Error(r.W, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+	// 	return fmt.Errorf("Unauthorized")
+	// }
+
+	var rr resources.Reservation
+
+	r.Decode(&rr)
+
+	res, err := reservations.SetReservation(ctx, api.DB, rr)
 	if err != nil {
-		fmt.Println("The error is here")
 		return err
 	}
-	if !ok {
-		http.Error(r.W, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		return fmt.Errorf("Unauthorized")
-	}
 
-	var res resources.Reservation
-
-	r.Decode(&res)
-
-	resOK, err := reservations.SetReservation(ctx, api.DB, res)
-	if err != nil {
-		return err
-	}
-
-	type response struct {
-		Response string
-	}
-
-	if resOK {
-		r.Encode(response{
-			Response: "Success",
-		})
-	}
+	r.Encode(res)
 	return nil
 }
 

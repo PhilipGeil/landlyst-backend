@@ -17,7 +17,7 @@ func (api *API) VerifyEmail(ctx context.Context, r *server.APIRequest) (err erro
 	fmt.Println(id)
 	auth.UserVerification(ctx, api.DB, id)
 
-	http.ServeFile(r.W, r.R, "C:\\Users\\phil2643\\development\\landlyst\\api-server\\public\\email-verified.html")
+	http.ServeFile(r.W, r.R, "C:\\Users\\PhilipJensen\\development\\landlyst-backend\\public\\email-verified.html")
 
 	return
 

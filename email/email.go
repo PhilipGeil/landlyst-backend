@@ -53,7 +53,7 @@ func SendVerifyEmail(uuid, email, fname string) {
 	subject := "Bekræft oprettelse"
 	var body bytes.Buffer
 
-	tmpl := template.Must(template.ParseFiles("C:\\Users\\phil2643\\development\\landlyst\\api-server\\email\\template.html"))
+	tmpl := template.Must(template.ParseFiles("C:\\Users\\PhilipJensen\\development\\landlyst-backend\\email\\template.html"))
 
 	if err := tmpl.Execute(&body, struct {
 		Name string
@@ -73,7 +73,7 @@ func SendConfirmEmail(res resources.ReservationResponse) {
 
 	var body bytes.Buffer
 
-	tmpl := template.Must(template.ParseFiles("C:\\Users\\phil2643\\development\\landlyst\\api-server\\email\\confirmed.html"))
+	tmpl := template.Must(template.ParseFiles("C:\\Users\\PhilipJensen\\development\\landlyst-backend\\email\\confirmed.html"))
 
 	if err := tmpl.Execute(&body, struct {
 		User      resources.Customer
@@ -98,6 +98,8 @@ func SendEmail(s, fname, email, subject string) {
 	host := "smtp.office365.com"
 	authEmail := os.Getenv("EMAIL_AUTH_EMAIL")
 	authPass := os.Getenv("EMAIL_AUTH_PASS")
+
+	fmt.Println(authEmail)
 
 	var msg strings.Builder
 	msg.WriteString("From: ")

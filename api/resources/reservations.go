@@ -38,6 +38,7 @@ type Discount struct {
 }
 
 type ReservationResponse struct {
-	Reservation Reservation
-	Discount    Discount
+	Reservation Reservation `json:"Reservation"`
+	Discount    Discount    `json:"Discount"`
+	Id          int         `json:"Id"`
 }

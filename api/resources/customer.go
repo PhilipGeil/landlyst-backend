@@ -9,4 +9,5 @@ type Customer struct {
 	Phone    string `json:"phone" db:"phone"`
 	Email    string `json:"email" db:"email"`
 	UserID   int    `json:"user_id"`
+	City     string `json:"city"`
 }

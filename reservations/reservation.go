@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/PhilipGeil/landlyst-backend/api/resources"
+	"github.com/PhilipGeil/landlyst-backend/email"
 	_ "github.com/jackc/pgtype"
 	"github.com/jmoiron/sqlx"
 )
@@ -59,6 +60,9 @@ func SetReservation(ctx context.Context, db *sqlx.DB, r resources.Reservation) (
 		id,
 	)
 
+	res.Reservation = r
+	res.Id = id
+
 	var discount resources.Discount
 
 	var discountType []uint8
@@ -83,7 +87,6 @@ func SetReservation(ctx context.Context, db *sqlx.DB, r resources.Reservation) (
 	tx.Commit()
 
 	res.Discount = discount
-	res.Reservation = r
 
 	return
 }
@@ -94,4 +97,30 @@ func B2S(bs []uint8) string {
 		b[i] = byte(v)
 	}
 	return string(b)
+}
+
+func ConfirmReservation(ctx context.Context, db *sqlx.DB, res resources.ReservationResponse) (err error) {
+	tx, err := db.BeginTxx(ctx, nil)
+	if err != nil {
+		return
+	}
+
+	_, err = tx.ExecContext(
+		ctx,
+		`
+			UPDATE reservations
+			SET confirmed = true
+			WHERE id = $1	
+		`,
+		res.Id,
+	)
+	if err != nil {
+		return
+	}
+
+	tx.Commit()
+
+	email.SendConfirmEmail(res)
+
+	return
 }

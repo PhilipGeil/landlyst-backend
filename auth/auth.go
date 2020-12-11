@@ -60,7 +60,7 @@ func CreateUser(ctx context.Context, user resources.User, db *sqlx.DB) (userID i
 			'{guest}'
 			) RETURNING id;
 		`,
-		user.FName, user.LName, user.Address, user.Zip_code, user.Phone, user.Email, base64.StdEncoding.EncodeToString(hash), base64.StdEncoding.EncodeToString(salt),
+		user.Fname, user.Lname, user.Address, user.Zip_code, user.Phone, user.Email, base64.StdEncoding.EncodeToString(hash), base64.StdEncoding.EncodeToString(salt),
 	).Scan(&userID)
 	if err != nil {
 		log.Fatal(err)

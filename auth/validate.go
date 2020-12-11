@@ -41,7 +41,7 @@ func ValidateEmailAndPassword(ctx context.Context, db *sqlx.DB, password, email 
 		`,
 		email,
 		base64.StdEncoding.EncodeToString(hash),
-	).Scan(&user.ID, &user.FName, &user.LName, &user.Address, &user.Zip_code, &user.Phone, &user.Email)
+	).Scan(&user.ID, &user.Fname, &user.Lname, &user.Address, &user.Zip_code, &user.Phone, &user.Email)
 	if err == sql.ErrNoRows {
 		return nil, err
 	}

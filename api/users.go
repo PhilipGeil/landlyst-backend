@@ -27,7 +27,7 @@ func (api *API) CreateUser(ctx context.Context, r *server.APIRequest) (err error
 		return
 	}
 
-	email.SendVerifyEmail(uuid, u.Email, u.FName)
+	email.SendVerifyEmail(uuid, u.Email, u.Fname)
 
 	type response struct {
 		Response string

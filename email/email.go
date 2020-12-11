@@ -15,6 +15,8 @@ import (
 	"net/smtp"
 	"os"
 	"strings"
+
+	"github.com/PhilipGeil/landlyst-backend/api/resources"
 )
 
 type loginAuth struct {
@@ -66,20 +68,36 @@ func SendVerifyEmail(uuid, email, fname string) {
 	SendEmail(base64.StdEncoding.EncodeToString(body.Bytes()), fname, email, subject)
 }
 
+func SendConfirmEmail(res resources.ReservationResponse) {
+	subject := "Ordre bekræftelse"
+
+	var body bytes.Buffer
+
+	tmpl := template.Must(template.ParseFiles("C:\\Users\\phil2643\\development\\landlyst\\api-server\\email\\confirmed.html"))
+
+	if err := tmpl.Execute(&body, struct {
+		User      resources.Customer
+		Link      string
+		StartDate string
+		EndDate   string
+	}{
+		User:      res.Reservation.Customer,
+		Link:      "http://localhost:3000/login",
+		StartDate: res.Reservation.Dates.StartDate.Format("2006-01-02 15:04:05"),
+		EndDate:   res.Reservation.Dates.EndDate.Format("2006-01-02 15:04:05"),
+	}); err != nil {
+		log.Fatalln(err)
+	}
+
+	SendEmail(base64.StdEncoding.EncodeToString(body.Bytes()), res.Reservation.Customer.FName, res.Reservation.Customer.Email, subject)
+}
+
 func SendEmail(s, fname, email, subject string) {
 	from := mail.Address{Name: "Landlyst Kro og Hotel", Address: "phil2643@zbc.dk"}
 	to := mail.Address{Name: fname, Address: email}
 	host := "smtp.office365.com"
 	authEmail := os.Getenv("EMAIL_AUTH_EMAIL")
 	authPass := os.Getenv("EMAIL_AUTH_PASS")
-
-	// headers := make(map[string]string)
-	// headers["From"] = from.String()
-	// headers["To"] = to.String()
-	// headers["Subject"] = subject
-	// headers["MIME-Version"] = mime
-	// headers["Content-Type"] = contentType
-	// headers["Content-Transfer-Encoding"] = contentTransfer
 
 	var msg strings.Builder
 	msg.WriteString("From: ")

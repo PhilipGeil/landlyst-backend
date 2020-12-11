@@ -7,13 +7,31 @@
     <title>Document</title>
     <style>
         body {
+            text-align: center;
+            width: 40%;
+            margin: auto;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
 
-        .user-info {
-            width: fit-content;
-            margin: 20px auto;
-            text-align: start;
+        .button {
+            background-color: #FD5D5D;
+            border: none;
+            padding: 10px 20px;
+            color: white;
+            font-weight: 600;
+            border-radius: 10px;
+            margin: auto;
+            width: 200px;
+        }
+
+        .button:hover {
+            cursor: pointer;
+            opacity: .7;
+        }
+
+        .button-div {
+            width: 100%;
+            text-align: center;
         }
     </style>
 </head>
@@ -21,23 +39,41 @@
 <body>
     <h1>Bestilling</h1>
     <div>
-        <span className="confirm-dates">{start}</span>
-        <span className="confirm-dates"> - </span>
-        <span className="confirm-dates">{end}</span>
+        <span class="confirm-dates">{{.StartDate}}</span>
+        <span class="confirm-dates"> - </span>
+        <span class="confirm-dates">{{.EndDate}}</span>
     </div>
-    <div className="user-info">
-        <span>{{.user.fname}}</span>
-        <span> {{.user.lname}}</span>
-        <br />
-        <span>{{.user.address}}</span>
-        <br />
-        <span>{{.user.zip_code}}</span>
-        <span> {{.user.city}}</span>
-        <br />
-        <span>{{.user.email}}</span>
-        <br />
-        <span>{{.user.phone}}</span>
+    <span>{{.User.FName}}</span>
+    <span> {{.User.LName}}</span>
+    <br />
+    <span>{{.User.Address}}</span>
+    <br />
+    <span>{{.User.Zip_code}}</span>
+    <span> {{.User.City}}</span>
+    <br />
+    <span>{{.User.Email}}</span>
+    <br />
+    <span>{{.User.Phone}}</span>
+    <p>Mange tak for din bestilling!</p>
+    <p>Vi glæder os meget til at du kommer og besøger os</p>
+    <p>for at se eller redigere i din bestilling, så log ind på vores side</p>
+    <br />
+    <div class="button-div">
+        <a class="button" style="background-color: #FD5D5D;
+        border: none;
+        width: 200px;
+        height: 50px;
+        padding: 10px 15px;
+        text-decoration: none;
+        color: white;
+        font-weight: 600;
+        border-radius: 10px;
+        margin: auto;" target="_blank" href="{{.Link}}">Login</a>
+
     </div>
+    <br />
+    <img class="logo" style="width: 440px;"
+        src="https://raw.githubusercontent.com/PhilipGeil/landlyst-backend/master/public/images/Logo.png"></img>
 </body>
 
 </html>

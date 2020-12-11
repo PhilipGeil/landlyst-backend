@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/PhilipGeil/landlyst-backend/api/resources"
 	"github.com/PhilipGeil/landlyst-backend/reservations"
@@ -60,6 +61,32 @@ func (api *API) SetReservation(ctx context.Context, r *server.APIRequest) error 
 	}
 
 	r.Encode(res)
+	return nil
+}
+
+func (api *API) ConfirmReservation(ctx context.Context, r *server.APIRequest) error {
+	id, ok := r.Vars["id"]
+	if !ok {
+		return fmt.Errorf("Missing id")
+	}
+	fmt.Println(id)
+
+	_, err := strconv.Atoi(id)
+	if err != nil {
+		return err
+	}
+
+	var s resources.ReservationResponse
+
+	r.Decode(&s)
+
+	fmt.Println(s.Reservation)
+
+	err = reservations.ConfirmReservation(ctx, api.DB, s)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -72,11 +72,9 @@ func RenewToken(w http.ResponseWriter, tokenStr, userEmail string, userID int) (
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name:     "token",
-		Value:    tokenString,
-		Expires:  expirationTime,
-		SameSite: http.SameSiteNoneMode,
-		Secure:   true,
+		Name:    "token",
+		Value:   tokenString,
+		Expires: expirationTime,
 	})
 
 	return

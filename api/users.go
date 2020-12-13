@@ -73,11 +73,9 @@ func (api *API) Login(ctx context.Context, r *server.APIRequest) error {
 	token := auth.CreateToken(user.Email, expiration, sessionID, user.ID)
 
 	http.SetCookie(r.W, &http.Cookie{
-		Name:     "token",
-		Value:    token,
-		Expires:  expiration,
-		SameSite: http.SameSiteNoneMode,
-		Secure:   true,
+		Name:    "token",
+		Value:   token,
+		Expires: expiration,
 	})
 
 	r.Encode(loginResponse{

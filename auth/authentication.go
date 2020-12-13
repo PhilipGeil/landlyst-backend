@@ -13,9 +13,8 @@ import (
 var authenticator auth.Authenticator
 var cache store.Cache
 
+//ValidateUser validates the user by checking if the email already exist in the db
 func ValidateUser(ctx context.Context, c resources.Credentials, db *sqlx.DB) (*resources.User, error) {
-
-	// here connect to db or any other service to fetch user and validate it.
 	user, err := ValidateEmailAndPassword(ctx, db, c.Password, c.Email)
 	if err != nil {
 		fmt.Println("The error is here auth/ValidateUser ln 37")

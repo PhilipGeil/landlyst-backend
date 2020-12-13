@@ -49,10 +49,12 @@ func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
 	return nil, nil
 }
 
+//SendVerifyEmail send an email to the newly created user, in order to get the verification
 func SendVerifyEmail(uuid, email, fname string) {
 	subject := "Bekræft oprettelse"
 	var body bytes.Buffer
 
+	//Change dist folder - depending on machine
 	tmpl := template.Must(template.ParseFiles("C:\\Users\\PhilipJensen\\development\\landlyst-backend\\email\\template.html"))
 
 	if err := tmpl.Execute(&body, struct {
@@ -68,11 +70,13 @@ func SendVerifyEmail(uuid, email, fname string) {
 	SendEmail(base64.StdEncoding.EncodeToString(body.Bytes()), fname, email, subject)
 }
 
+//SendConfirmEmail sends a confirm email after a order has been made
 func SendConfirmEmail(res resources.ReservationResponse) {
 	subject := "Ordre bekræftelse"
 
 	var body bytes.Buffer
 
+	//Change dist folder - depending on machine
 	tmpl := template.Must(template.ParseFiles("C:\\Users\\PhilipJensen\\development\\landlyst-backend\\email\\confirmed.html"))
 
 	if err := tmpl.Execute(&body, struct {
@@ -92,12 +96,13 @@ func SendConfirmEmail(res resources.ReservationResponse) {
 	SendEmail(base64.StdEncoding.EncodeToString(body.Bytes()), res.Reservation.Customer.FName, res.Reservation.Customer.Email, subject)
 }
 
+//SendEmail actually sends the emails
 func SendEmail(s, fname, email, subject string) {
-	from := mail.Address{Name: "Landlyst Kro og Hotel", Address: "phil2643@zbc.dk"}
-	to := mail.Address{Name: fname, Address: email}
-	host := "smtp.office365.com"
 	authEmail := os.Getenv("EMAIL_AUTH_EMAIL")
 	authPass := os.Getenv("EMAIL_AUTH_PASS")
+	from := mail.Address{Name: "Landlyst Kro og Hotel", Address: authEmail}
+	to := mail.Address{Name: fname, Address: email}
+	host := "smtp.office365.com"
 
 	fmt.Println(authEmail)
 

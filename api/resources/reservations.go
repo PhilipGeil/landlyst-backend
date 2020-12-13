@@ -7,8 +7,8 @@ import (
 )
 
 type ReservationDates struct {
-	StartDate time.Time `json:"start_date"`
-	EndDate   time.Time `json:"end_date"`
+	StartDate time.Time `json:"start_date" db:"start_date"`
+	EndDate   time.Time `json:"end_date" db:"end_date"`
 }
 
 type ReservationSearch struct {
@@ -41,4 +41,9 @@ type ReservationResponse struct {
 	Reservation Reservation `json:"Reservation"`
 	Discount    Discount    `json:"Discount"`
 	Id          int         `json:"Id"`
+}
+
+type GetReservation struct {
+	ReservationDates ReservationDates
+	Id               int
 }

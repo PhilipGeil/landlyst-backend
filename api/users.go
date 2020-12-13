@@ -69,13 +69,15 @@ func (api *API) Login(ctx context.Context, r *server.APIRequest) error {
 		return err
 	}
 
-	expiration := time.Now().Add(time.Hour * 2)
-	token := auth.CreateToken(user.Email, expiration, sessionID)
+	expiration := time.Now().Add(time.Hour * 24)
+	token := auth.CreateToken(user.Email, expiration, sessionID, user.ID)
 
 	http.SetCookie(r.W, &http.Cookie{
-		Name:    "token",
-		Value:   token,
-		Expires: expiration,
+		Name:     "token",
+		Value:    token,
+		Expires:  expiration,
+		SameSite: http.SameSiteNoneMode,
+		Secure:   true,
 	})
 
 	r.Encode(loginResponse{

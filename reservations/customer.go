@@ -8,8 +8,7 @@ import (
 )
 
 //CreateCustomer creates a new customer in the DB and returns the newly created ID
-func CreateCustomer(ctx context.Context, db *sqlx.DB, c resources.Customer) (customerID int, err error) {
-	tx, err := db.BeginTxx(ctx, nil)
+func CreateCustomer(ctx context.Context, tx *sqlx.Tx, c resources.Customer) (customerID int, err error) {
 	if err != nil {
 		return
 	}
@@ -49,8 +48,6 @@ func CreateCustomer(ctx context.Context, db *sqlx.DB, c resources.Customer) (cus
 			c.UserID,
 		)
 	}
-
-	tx.Commit()
 
 	return
 

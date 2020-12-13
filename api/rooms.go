@@ -37,14 +37,6 @@ func (api *API) Rooms(ctx context.Context, r *server.APIRequest) error {
 }
 
 func (api *API) RoomAdditions(ctx context.Context, r *server.APIRequest) error {
-	// ok, err := r.UserAuthentication(ctx, api.DB)
-	// if err != nil {
-	// 	return err
-	// }
-	// if !ok {
-	// 	http.Error(r.W, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-	// 	return fmt.Errorf("Unauthorized")
-	// }
 	r.W.Header().Set("Access-Control-Allow-Origin", "*")
 	ra, err := room.RoomAdditions(ctx, api.DB)
 	if err != nil {

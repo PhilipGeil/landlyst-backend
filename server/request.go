@@ -26,7 +26,7 @@ type cachedUserAuthentication struct {
 }
 
 //UserAuthentication authenticates the user
-func (r *Request) UserAuthentication(ctx context.Context, db *sqlx.DB) (authenticated bool, err error) {
+func (r *Request) UserAuthentication(ctx context.Context, db *sqlx.DB) (ok bool, email string, id int, err error) {
 	c, err := r.R.Cookie("token")
 	if err != nil {
 		if err == http.ErrNoCookie {
@@ -44,16 +44,16 @@ func (r *Request) UserAuthentication(ctx context.Context, db *sqlx.DB) (authenti
 		return
 	}
 
-	ok := auth.ValidateToken(tknStr)
+	ok, email, id = auth.ValidateToken(tknStr)
 	var sessionID int
 	if ok {
-		sessionID, err = auth.RenewToken(r.W, tknStr)
+		sessionID, err = auth.RenewToken(r.W, tknStr, email, id)
 		if err != nil {
 			return
 		}
 		auth.ExtendSession(ctx, db, sessionID)
 	}
-	return ok, nil
+	return
 }
 
 // func (r *Request) UserAuthentication() (userID string, authenticated bool, err error) {

@@ -3,6 +3,7 @@ package reservations
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/PhilipGeil/landlyst-backend/api/resources"
 	"github.com/PhilipGeil/landlyst-backend/email"
@@ -41,7 +42,7 @@ func SetReservation(ctx context.Context, db *sqlx.DB, r resources.Reservation) (
 		return
 	}
 
-	customerID, err := CreateCustomer(ctx, db, r.Customer)
+	customerID, err := CreateCustomer(ctx, tx, r.Customer)
 	if err != nil {
 		return
 	}
@@ -121,6 +122,50 @@ func ConfirmReservation(ctx context.Context, db *sqlx.DB, res resources.Reservat
 	tx.Commit()
 
 	email.SendConfirmEmail(res)
+
+	return
+}
+
+func GetReservation(ctx context.Context, db *sqlx.DB, id int, email string) (res []resources.GetReservation, err error) {
+	tx, err := db.BeginTxx(ctx, nil)
+	if err != nil {
+		return
+	}
+
+	rows, err := tx.QueryxContext(
+		ctx,
+		`
+			SELECT reservation_id::integer, start_date, end_date FROM customer_reservations
+			JOIN reservations ON reservations.id = customer_reservations.reservation_id
+			JOIN customers ON customers.id = customer_reservations.customer_id
+			WHERE customer_id IN (
+				SELECT customer_id FROM customers_users
+				JOIN users ON users.id = customers_users.user_id
+				WHERE user_id = $1
+			) OR email IN (
+				SELECT email FROM customers_users
+				JOIN users ON users.id = customers_users.user_id
+				WHERE email = $2
+			) 
+			AND confirmed = true
+		`,
+		id,
+		email,
+	)
+	if err == sql.ErrNoRows {
+		return res, nil
+	}
+	if err != nil {
+		fmt.Println("It's here")
+		return
+	}
+
+	var r resources.GetReservation
+
+	for rows.Next() {
+		rows.Scan(&r.Id, &r.ReservationDates.StartDate, &r.ReservationDates.EndDate)
+		res = append(res, r)
+	}
 
 	return
 }

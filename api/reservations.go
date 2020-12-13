@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strconv"
 
 	"github.com/PhilipGeil/landlyst-backend/api/resources"
@@ -86,6 +87,27 @@ func (api *API) ConfirmReservation(ctx context.Context, r *server.APIRequest) er
 	if err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func (api *API) GetReservations(ctx context.Context, r *server.APIRequest) error {
+	ok, email, id, err := r.UserAuthentication(ctx, api.DB)
+	if err != nil {
+		fmt.Println("The error is here")
+		return err
+	}
+	if !ok {
+		http.Error(r.W, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return fmt.Errorf("Unauthorized")
+	}
+
+	res, err := reservations.GetReservation(ctx, api.DB, id, email)
+	if err != nil {
+		return err
+	}
+
+	r.Encode(res)
 
 	return nil
 }

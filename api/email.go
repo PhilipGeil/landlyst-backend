@@ -12,7 +12,7 @@ import (
 )
 
 func (api *API) SendEmail(ctx context.Context, r *server.APIRequest) error {
-	ok, err := r.UserAuthentication(ctx, api.DB)
+	ok, _, _, err := r.UserAuthentication(ctx, api.DB)
 	if err != nil {
 		fmt.Println("The error is here")
 		return err

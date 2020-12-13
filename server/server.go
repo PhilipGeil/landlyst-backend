@@ -21,6 +21,7 @@ func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", origin)
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", "Accept, Accept-Language, Content-Type, YourOwnHeader")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
 	}
 	// Stop here if its Preflighted OPTIONS request
 	if r.Method == "OPTIONS" {

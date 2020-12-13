@@ -8,7 +8,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-func CreateToken(userEmail string, expiration time.Time, sessionID int) string {
+func CreateToken(userEmail string, expiration time.Time, sessionID, userID int) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"iss":       "landlyst",
 		"sub":       "users",
@@ -16,6 +16,7 @@ func CreateToken(userEmail string, expiration time.Time, sessionID int) string {
 		"email":     userEmail,
 		"exp":       expiration.Unix(),
 		"sessionID": sessionID,
+		"id":        userID,
 	})
 
 	//TODO Create a real secret at some point
@@ -26,7 +27,7 @@ func CreateToken(userEmail string, expiration time.Time, sessionID int) string {
 	return jwtToken
 }
 
-func ValidateToken(tokenString string) bool {
+func ValidateToken(tokenString string) (ok bool, email string, id int) {
 	claims := jwt.MapClaims{}
 	tkn, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte("secret"), nil
@@ -34,12 +35,14 @@ func ValidateToken(tokenString string) bool {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(tkn.Valid)
-	return tkn.Valid
+	ok = tkn.Valid
+	email = claims["email"].(string)
+	id = int(claims["id"].(float64))
+	return
 
 }
 
-func RenewToken(w http.ResponseWriter, tokenStr string) (sessionID int, err error) {
+func RenewToken(w http.ResponseWriter, tokenStr, userEmail string, userID int) (sessionID int, err error) {
 
 	tokenClaim, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
 		return []byte("secret"), nil
@@ -54,10 +57,12 @@ func RenewToken(w http.ResponseWriter, tokenStr string) (sessionID int, err erro
 	fmt.Println("Here comes the sessionID:")
 	sessionID = int(claims["sessionID"].(float64))
 
-	expirationTime := time.Now().Add(2 * time.Hour)
+	expirationTime := time.Now().Add(24 * time.Hour)
 	claims = jwt.MapClaims{
 		"exp":       expirationTime.Unix(),
 		"sessionID": sessionID,
+		"id":        userID,
+		"email":     userEmail,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString([]byte("secret"))
@@ -67,9 +72,11 @@ func RenewToken(w http.ResponseWriter, tokenStr string) (sessionID int, err erro
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name:    "token",
-		Value:   tokenString,
-		Expires: expirationTime,
+		Name:     "token",
+		Value:    tokenString,
+		Expires:  expirationTime,
+		SameSite: http.SameSiteNoneMode,
+		Secure:   true,
 	})
 
 	return
